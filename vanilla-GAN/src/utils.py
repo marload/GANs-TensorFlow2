@@ -9,5 +9,5 @@ def d_loss(real_output, fake_output):
     return real_loss + fake_loss
 
 
-def generator_loss(fake_output):
+def g_loss(fake_output):
     return loss_object(tf.ones_like(fake_output), fake_output)
