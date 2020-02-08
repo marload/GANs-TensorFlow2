@@ -8,7 +8,7 @@ from utils import compute_disc_loss, compute_gen_loss
 EPOCHS = 100
 Z_DIM = 100
 BATCH_SIZE = 256
-BUFFER_SIZE = 6000
+BUFFER_SIZE = 60000
 
 (train_x, _), (_, _) = tf.keras.datasets.mnist.load_data()
 train_x = train_x.reshape(train_x.shape[0], 28*28).astype('float32')

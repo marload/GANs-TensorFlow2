@@ -17,13 +17,21 @@ This repo uses Tensorflow 2.0 to store the code of the implemented GAN. It is co
 |  Name  |                                                              DCGAN                                                               |
 | :----: | :------------------------------------------------------------------------------------------------------------------------------: |
 | Paper  | [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434) |
-| Author |                                                    Alec Radford al.                                                       |
+| Author |                                                         Alec Radford al.                                                         |
 |  Code  |                      🔥[Implemented!](https://github.com/marload/TensorFlow-GANs/tree/master/gans/DCGAN)🔥                       |
 
 ### LSGAN
 
-|  Name  |                                       LSGAN                                       |
-| :----: | :-------------------------------------------------------------------------------: |
-| Paper  | [Least Squares Generative Adversarial Networks](https://arxiv.org/abs/1611.04076) |
+|  Name  |                                         LSGAN                                         |
+| :----: | :-----------------------------------------------------------------------------------: |
+| Paper  |   [Least Squares Generative Adversarial Networks](https://arxiv.org/abs/1611.04076)   |
 | Author |                                   Xudong Mao et al.                                   |
-|  Code  |                             :trollface: Comming Soon                              |
+|  Code  | 🔥[Implemented!](https://github.com/marload/TensorFlow-GANs/tree/master/gans/LSGAN)🔥 |
+
+### WGAN
+
+|  Name  |                        WGAN                         |
+| :----: | :-------------------------------------------------: |
+| Paper  | [Wasserstein GAN](https://arxiv.org/abs/1701.07875) |
+| Author |               Martin Arjovsky et al.                |
+|  Code  |                    Comming Soon                     |

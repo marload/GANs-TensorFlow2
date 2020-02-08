@@ -12,7 +12,7 @@ def make_discriminaor():
         layers.LeakyReLU(0.2),
         layers.Dropout(0.3),
         layers.Flatten(),
-        layers.Dense(1)
+        layers.Dense(1, activation='sigmoid')
     ])
 
 
