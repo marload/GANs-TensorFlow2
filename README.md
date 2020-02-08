@@ -9,7 +9,7 @@ This repo uses Tensorflow 2.0 to store the code of the implemented GAN. It is co
 |  Name  |                                         Vanilla GAN                                         |
 | :----: | :-----------------------------------------------------------------------------------------: |
 | Paper  |             [Generative Adversarial Networks](https://arxiv.org/abs/1406.2661)              |
-| Author |                                    Ian Goodfellow et at.                                    |
+| Author |                                    Ian Goodfellow et al.                                    |
 |  Code  | 🔥[Implemented!](https://github.com/marload/TensorFlow-GANs/tree/master/gans/vanilla-GAN)🔥 |
 
 ### DCGAN
@@ -17,5 +17,5 @@ This repo uses Tensorflow 2.0 to store the code of the implemented GAN. It is co
 |  Name  |                                                              DCGAN                                                               |
 | :----: | :------------------------------------------------------------------------------------------------------------------------------: |
 | Paper  | [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434) |
-| Author |                                                      Ian Goodfellow et at.                                                       |
+| Author |                                                      Ian Goodfellow et al.                                                       |
 |  Code  |                      🔥[Implemented!](https://github.com/marload/TensorFlow-GANs/tree/master/gans/DCGAN)🔥                       |
