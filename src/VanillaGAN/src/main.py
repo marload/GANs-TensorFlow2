@@ -19,8 +19,8 @@ train_ds = tf.data.Dataset.from_tensor_slices(
 G = make_generator()
 D = make_discriminaor()
 
-g_optim = tf.keras.optimizers.Adam(1e-4)
-d_optim = tf.keras.optimizers.Adam(1e-4)
+g_optim = tf.keras.optimizers.SGD(1e-4)
+d_optim = tf.keras.optimizers.SGD(1e-4)
 
 
 @tf.function

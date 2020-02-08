@@ -19,8 +19,8 @@ train_ds = tf.data.Dataset.from_tensor_slices(
 G = make_generator()
 D = make_discriminaor()
 
-g_optim = tf.keras.optimizers.Adam(1e-4)
-d_optim = tf.keras.optimizers.Adam(1e-4)
+g_optim = tf.keras.optimizers.Adam(1e-4, beta_1=0.5, beta_2=0.999)
+d_optim = tf.keras.optimizers.Adam(1e-4, beta_1=0.5, beta_2=0.999)
 
 compute_disc_loss, compute_gen_loss = get_loss()
 
