@@ -14,6 +14,7 @@ This repo uses Tensorflow 2.0 to store the code of the implemented GAN. It is co
 
 ### DCGAN
 
+|        |                                                                                                                                  |
 | :----: | :------------------------------------------------------------------------------------------------------------------------------: |
 |  Name  |                                                              DCGAN                                                               |
 | Paper  | [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434) |
