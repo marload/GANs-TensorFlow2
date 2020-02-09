@@ -5,7 +5,7 @@ from model import make_discriminaor, make_generator
 from utils import get_loss
 
 # HyperParameters
-EPOCHS = 100
+ITERATION = 300000
 Z_DIM = 100
 BATCH_SIZE = 256
 BUFFER_SIZE = 60000
@@ -14,7 +14,8 @@ BUFFER_SIZE = 60000
 train_x = train_x.reshape(train_x.shape[0], 28, 28, 1).astype('float32')
 train_x -= 127.5
 train_ds = tf.data.Dataset.from_tensor_slices(
-    train_x).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+    train_x).shuffle(BUFFER_SIZE).batch(BATCH_SIZE).repeat()
+train_ds = iter(train_ds)
 
 G = make_generator()
 D = make_discriminaor()
@@ -47,13 +48,13 @@ def train_step(real_images):
 
 
 def train():
-    for epoch in range(EPOCHS):
-        for step, images in enumerate(train_ds):
-            g_loss, d_loss = train_step(images)
+    for step in range(ITERATION):
+        images = next(train_ds)
+        g_loss, d_loss = train_step(images)
 
-            if step % 30 == 0:
-                print('[{}/{}] [{}] D_loss={} G_loss={} total_loss={}'.format(epoch +
-                                                                              1, EPOCHS, step, d_loss, g_loss, d_loss+g_loss))
+        if step % 30 == 0:
+            print('[{}/{}] D_loss={} G_loss={} total_loss={}'.format(step,
+                                                                     iteration, d_loss, g_loss, d_loss+g_loss))
 
 
 train()
