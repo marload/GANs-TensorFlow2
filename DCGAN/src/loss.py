@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def get_loss():
+def get_loss_fn():
     loss_object = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
     def compute_disc_loss(real_output, fake_output):

@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 
-def get_loss():
-    loss_object = tf.keras.losses.MeanSquaredError()  # This is Least Squre Error
+def get_loss_fn():
+    loss_object = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
     def compute_disc_loss(real_output, fake_output):
         real_loss = loss_object(tf.ones_like(real_output), real_output)

@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 from model import make_discriminaor, make_generator
-from utils import compute_disc_loss, compute_gen_loss
+from loss import get_loss_fn
 
 # HyperParameters
 ITERATION = 300000
@@ -22,6 +22,8 @@ D = make_discriminaor()
 
 g_optim = tf.keras.optimizers.SGD(1e-4)
 d_optim = tf.keras.optimizers.SGD(1e-4)
+
+compute_disc_loss, compute_gen_loss = get_loss_fn()
 
 
 @tf.function
