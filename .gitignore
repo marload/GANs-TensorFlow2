@@ -2,3 +2,4 @@
 **/.DS_Store
 **/logs/
 **/__pycache__/
+**/result/
