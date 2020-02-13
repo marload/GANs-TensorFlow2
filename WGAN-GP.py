@@ -83,9 +83,8 @@ def get_loss_fn():  # define loss function
 
     return d_loss_fn, g_loss_fn
 
+
 # Gradient Penalty (GP)
-
-
 def gradient_penalty(generator, real_images, fake_images):
     alpha = tf.random.uniform([BATCH_SIZE, 1, 1, 1], 0., 1.)
     diff = fake_images - real_images
