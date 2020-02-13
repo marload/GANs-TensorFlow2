@@ -24,7 +24,7 @@ d_loss_metrics = tf.metrics.Mean(name='d_loss')
 total_loss_metrics = tf.metrics.Mean(name='total_loss')
 
 # hyper-parameters
-ITERATION = 300000
+ITERATION = 100000
 Z_DIM = 100
 BATCH_SIZE = 512
 BUFFER_SIZE = 60000
