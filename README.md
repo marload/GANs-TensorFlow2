@@ -1,9 +1,9 @@
 # TensorFlow2 Variant GANs
 
-This repo uses Tensorflow 2.0 to store the code of the implemented GAN. It is constantly being updated, and the goal is to implement all the GANs that have been released to academia.
+This repo uses [TensorFlow2](https://github.com/tensorflow/tensorflow) to implement and store variants of GANs. I will continue to update this repo and my goal is to implement all the GANs that exist in the world. I was very inspired by the [repo of Hwalsuk Lee](https://github.com/hwalsuklee/tensorflow-generative-model-collections). I implemented it along the code style of the [TensorFlow2 Offical Tutorial](https://www.tensorflow.org/tutorials/). All GAN scrips do not rely on any external files except utils. If you are studying GAN, I believe that reference to this repo is the best choice. I sincerely thank you Ian Goodfellow for opening the GAN era and Google for creating the best framework, TensorFlow.
 
 
-### VanillaGAN
+### GAN
 
 
 |  Name  |                                                              GAN                                                               |
