@@ -24,7 +24,7 @@ D_LR = 0.0004
 G_LR = 0.0004
 IMAGE_SHAPE = (28, 28, 1)
 RANDOM_SEED = 42
-
+D_NUM_CLASSES = 10 + 1  # category + fake
 np.random.seed(RANDOM_SEED)
 tf.random.set_seed(RANDOM_SEED)
 
@@ -41,7 +41,7 @@ def make_discriminaor(input_shape):  # define discriminator
         layers.LeakyReLU(),
         layers.Dropout(0.3),
         layers.Flatten(),
-        layers.Dense(10 + 1, activation='softmax')  # category + fake
+        layers.Dense(D_NUM_CLASSES, activation='softmax')
     ])
 
 
@@ -68,12 +68,18 @@ def get_loss_fn():  # define loss function
     criterion = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
 
     def d_loss_fn(real_logits, real_labels, fake_logits):
+        fake_labels = tf.one_hot(
+            tf.fill(real_labels.shape, 10), D_NUM_CLASSES)  # 10 is fake category
+        real_labels = tf.one_hot(real_labels, D_NUM_CLASSES)
+
         real_loss = criterion(real_labels, real_logits)
-        fake_loss = criterion(tf.fill(fake_logits.shape, 10), fake_logits)
+        fake_loss = criterion(fake_labels, fake_logits)
         return real_loss + fake_loss
 
     def g_loss_fn(fake_logits):
-        return criterion(tf.random.uniform(fake_logits.shape, 0, 10, tf.int32), fake_logits)
+        fake_labels = tf.one_hot(tf.random.uniform(
+            (BATCH_SIZE,), 0, 10, dtype=tf.int32), D_NUM_CLASSES)  # 0 ~ 9 is real category
+        return criterion(fake_labels, fake_logits)
 
     return d_loss_fn, g_loss_fn
 
@@ -151,7 +157,7 @@ def train(ds, log_freq=20, test_freq=1000):  # training loop
         if step % test_freq == 0:
             # generate result images
             generate_and_save_images(
-                G, step, test_z, IMAGE_SHAPE, name='catgan')
+                G, step, test_z, IMAGE_SHAPE, name='ssgan', max_step=ITERATION)
 
 
 train(train_ds)

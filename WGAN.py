@@ -148,7 +148,7 @@ def train(ds, log_freq=20, test_freq=1000):  # training loop
         if step % test_freq == 0:
             # generate result images
             generate_and_save_images(
-                G, step, test_z, IMAGE_SHAPE, name='wgan')
+                G, step, test_z, IMAGE_SHAPE, name='wgan', max_step=ITERATION)
 
 
 train(train_ds)
