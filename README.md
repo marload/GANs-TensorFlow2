@@ -63,7 +63,7 @@ This repo uses [TensorFlow2](https://github.com/tensorflow/tensorflow) to implem
 | Author |                               Augustus Odena                               |
 |  Code  |            🔥[Implemented!](https://arxiv.org/abs/1606.01583)🔥            |
 
-#### ref
+#### Reference
 
 * https://github.com/tensorflow/tensorflow
 * https://github.com/hwalsuklee/tensorflow-generative-model-collections
