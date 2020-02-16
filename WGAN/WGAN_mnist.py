@@ -4,7 +4,7 @@ from tensorflow.keras import layers
 import os
 import numpy as np
 from datetime import datetime
-from utils import generate_and_save_images, get_random_z
+import sys
 
 # tensorboard setting
 log_dir = 'logs/gan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -64,19 +64,18 @@ def make_generator(input_shape):  # define generator
     ])
 
 
+# Wasserstein Loss
 def get_loss_fn():  # define loss function
-    criterion = tf.keras.losses.MeanSquaredError()  # Least Squared Error
-
     def d_loss_fn(real_logits, fake_logits):
-        real_loss = criterion(tf.ones_like(real_logits), real_logits)
-        fake_loss = criterion(tf.zeros_like(fake_logits), fake_logits)
-        return real_loss + fake_loss
+        return tf.reduce_mean(fake_logits) - tf.reduce_mean(real_logits)
 
     def g_loss_fn(fake_logits):
-        return criterion(tf.ones_like(fake_logits), fake_logits)
+        return -tf.reduce_mean(fake_logits)
 
     return d_loss_fn, g_loss_fn
 
+sys.path.append('..')
+from utils import generate_and_save_images, get_random_z
 
 # data load & preprocessing
 (train_x, _), (_, _) = tf.keras.datasets.mnist.load_data()
@@ -151,7 +150,7 @@ def train(ds, log_freq=20, test_freq=1000):  # training loop
         if step % test_freq == 0:
             # generate result images
             generate_and_save_images(
-                G, step, test_z, IMAGE_SHAPE, name='lsgan')
+                G, step, test_z, IMAGE_SHAPE, name='wgan_mnist', max_step=ITERATION)
 
 
 train(train_ds)

@@ -2,9 +2,9 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 import os
+import sys
 import numpy as np
 from datetime import datetime
-from utils import generate_and_save_images, get_random_z
 
 # tensorboard setting
 log_dir = 'logs/gan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -83,6 +83,8 @@ def get_loss_fn():  # define loss function
 
     return d_loss_fn, g_loss_fn
 
+sys.path.append('..')
+from utils import generate_and_save_images, get_random_z
 
 # data load & preprocessing
 (train_x, train_y), (_, _) = tf.keras.datasets.mnist.load_data()
@@ -157,7 +159,7 @@ def train(ds, log_freq=20, test_freq=1000):  # training loop
         if step % test_freq == 0:
             # generate result images
             generate_and_save_images(
-                G, step, test_z, IMAGE_SHAPE, name='ssgan', max_step=ITERATION)
+                G, step, test_z, IMAGE_SHAPE, name='ssgan_mnist', max_step=ITERATION)
 
 
 train(train_ds)
