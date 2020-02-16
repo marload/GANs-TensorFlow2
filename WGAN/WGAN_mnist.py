@@ -7,7 +7,7 @@ from datetime import datetime
 import sys
 
 # tensorboard setting
-log_dir = 'logs/gan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir = 'logs/wgan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
 writer = tf.summary.create_file_writer(log_dir)
 
 # metrics setting

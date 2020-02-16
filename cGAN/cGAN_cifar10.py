@@ -23,9 +23,9 @@ BATCH_SIZE = 512
 BUFFER_SIZE = 60000
 D_LR = 0.0004
 G_LR = 0.0004
-IMAGE_SHAPE = (28, 28, 1)
+IMAGE_SHAPE = (32, 32, 3)
 RANDOM_SEED = 42
-NUM_CLASSES = 10  # 10 is number of MNIST clategory
+NUM_CLASSES = 10  # 10 is number of CIFAR10 clategory
 
 np.random.seed(RANDOM_SEED)
 tf.random.set_seed(RANDOM_SEED)
@@ -75,11 +75,11 @@ class Generator(tf.keras.Model):
     def __init__(self, z_shape):
         super(Generator, self).__init__()
         self.input_layer = tf.keras.Sequential([
-            layers.Dense(7*7*256, use_bias=False,
+            layers.Dense(8*8*256, use_bias=False,
                          input_shape=(z_shape[0] + NUM_CLASSES,)),
             layers.BatchNormalization(),
             layers.LeakyReLU(),
-            layers.Reshape((7, 7, 256))
+            layers.Reshape((8, 8, 256))
         ])
         self.conv_tp_1 = tf.keras.Sequential([
             layers.Conv2DTranspose(128, (5, 5), strides=(
@@ -122,8 +122,8 @@ sys.path.append('..')
 from utils import generate_and_save_images, get_random_z
 
 # data load & preprocessing
-(train_x, train_y), (_, _) = tf.keras.datasets.mnist.load_data()
-train_x = train_x.reshape(train_x.shape[0], 28, 28, 1).astype('float32')
+(train_x, train_y), (_, _) = tf.keras.datasets.cifar10.load_data()
+train_x = train_x.reshape(train_x.shape[0], 32, 32, 3).astype('float32')
 train_x = (train_x - 127.5) / 127.5
 train_ds = (
     tf.data.Dataset.from_tensor_slices((train_x, train_y))
@@ -196,7 +196,7 @@ def train(ds, log_freq=20, test_freq=1000):  # training loop
         if step % test_freq == 0:
             # generate result images
             generate_and_save_images(
-                partial(G, labels=test_labels), step, test_z, IMAGE_SHAPE, name='cgan_mnist', max_step=ITERATION, figsize=(10, 10))
+                partial(G, labels=test_labels), step, test_z, IMAGE_SHAPE, name='cgan_cifar10', max_step=ITERATION, figsize=(10, 10))
 
 
 train(train_ds)

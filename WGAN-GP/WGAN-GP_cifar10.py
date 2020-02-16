@@ -1,3 +1,10 @@
+''' 
+=====REFERENCE=====
+papers: https://arxiv.org/abs/1704.00028
+develop ref:
+    https://www.tensorflow.org/tutorials/generative/dcgan
+    https://github.com/drewszurko/tensorflow-WGAN-GP
+'''
 import tensorflow as tf
 from tensorflow.keras import layers
 
@@ -5,9 +12,10 @@ import os
 import sys
 import numpy as np
 from datetime import datetime
+from functools import partial
 
 # tensorboard setting
-log_dir = 'logs/dcgan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir = 'logs/wgan-gp/' + datetime.now().strftime("%Y%m%d-%H%M%S")
 writer = tf.summary.create_file_writer(log_dir)
 
 # metrics setting
@@ -22,7 +30,8 @@ BATCH_SIZE = 512
 BUFFER_SIZE = 60000
 D_LR = 0.0004
 G_LR = 0.0004
-IMAGE_SHAPE = (28, 28, 1)
+GP_WEIGHT = 10.0
+IMAGE_SHAPE = (32, 32, 3)
 RANDOM_SEED = 42
 
 np.random.seed(RANDOM_SEED)
@@ -34,7 +43,7 @@ test_z = tf.random.normal([36, Z_DIM])
 def make_discriminaor(input_shape):  # define discriminator
     return tf.keras.Sequential([
         layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
-                      input_shape=[28, 28, 1]),
+                      input_shape=input_shape),
         layers.LeakyReLU(),
         layers.Dropout(0.3),
         layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'),
@@ -47,10 +56,10 @@ def make_discriminaor(input_shape):  # define discriminator
 
 def make_generator(input_shape):  # define generator
     return tf.keras.Sequential([
-        layers.Dense(7*7*256, use_bias=False, input_shape=input_shape),
+        layers.Dense(8*8*256, use_bias=False, input_shape=input_shape),
         layers.BatchNormalization(),
         layers.LeakyReLU(),
-        layers.Reshape((7, 7, 256)),
+        layers.Reshape((8, 8, 256)),
         layers.Conv2DTranspose(128, (5, 5), strides=(
             1, 1), padding='same', use_bias=False),
         layers.BatchNormalization(),
@@ -64,25 +73,35 @@ def make_generator(input_shape):  # define generator
     ])
 
 
+# Wasserstein Loss
 def get_loss_fn():  # define loss function
-    criterion = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-
     def d_loss_fn(real_logits, fake_logits):
-        real_loss = criterion(tf.ones_like(real_logits), real_logits)
-        fake_loss = criterion(tf.zeros_like(fake_logits), fake_logits)
-        return real_loss + fake_loss
+        return tf.reduce_mean(fake_logits) - tf.reduce_mean(real_logits)
 
     def g_loss_fn(fake_logits):
-        return criterion(tf.ones_like(fake_logits), fake_logits)
+        return -tf.reduce_mean(fake_logits)
 
     return d_loss_fn, g_loss_fn
+
+
+# Gradient Penalty (GP)
+def gradient_penalty(generator, real_images, fake_images):
+    alpha = tf.random.uniform([BATCH_SIZE, 1, 1, 1], 0., 1.)
+    diff = fake_images - real_images
+    inter = real_images + (alpha * diff)
+    with tf.GradientTape() as tape:
+        tape.watch(inter)
+        predictions = generator(inter)
+    gradients = tape.gradient(predictions, [inter])[0]
+    slopes = tf.sqrt(tf.reduce_sum(tf.square(gradients), axis=[1, 2, 3]))
+    return tf.reduce_mean((slopes - 1.) ** 2)
 
 sys.path.append('..')
 from utils import generate_and_save_images, get_random_z
 
 # data load & preprocessing
-(train_x, _), (_, _) = tf.keras.datasets.mnist.load_data()
-train_x = train_x.reshape(train_x.shape[0], 28, 28, 1).astype('float32')
+(train_x, _), (_, _) = tf.keras.datasets.cifar10.load_data()
+train_x = train_x.reshape(train_x.shape[0], 32, 32, 3).astype('float32')
 train_x = (train_x - 127.5) / 127.5
 train_ds = (
     tf.data.Dataset.from_tensor_slices(train_x)
@@ -114,6 +133,10 @@ def train_step(real_images):
 
         d_loss = d_loss_fn(real_logits, fake_logits)
         g_loss = g_loss_fn(fake_logits)
+
+        gp = gradient_penalty(partial(D, training=True),
+                              real_images, fake_images)
+        d_loss += gp * GP_WEIGHT
 
     d_gradients = d_tape.gradient(d_loss, D.trainable_variables)
     g_gradients = g_tape.gradient(g_loss, G.trainable_variables)
@@ -153,7 +176,7 @@ def train(ds, log_freq=20, test_freq=1000):  # training loop
         if step % test_freq == 0:
             # generate result images
             generate_and_save_images(
-                G, step, test_z, IMAGE_SHAPE, name='dcgan_mnist', max_step=ITERATION)
+                G, step, test_z, IMAGE_SHAPE, name='wgan-gp_cifar10', max_step=ITERATION)
 
 
 train(train_ds)

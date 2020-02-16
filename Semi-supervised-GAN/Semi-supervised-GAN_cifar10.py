@@ -7,7 +7,7 @@ import numpy as np
 from datetime import datetime
 
 # tensorboard setting
-log_dir = 'logs/dcgan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir = 'logs/ssgan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
 writer = tf.summary.create_file_writer(log_dir)
 
 # metrics setting
@@ -22,9 +22,9 @@ BATCH_SIZE = 512
 BUFFER_SIZE = 60000
 D_LR = 0.0004
 G_LR = 0.0004
-IMAGE_SHAPE = (28, 28, 1)
+IMAGE_SHAPE = (32, 32, 3)
 RANDOM_SEED = 42
-
+D_NUM_CLASSES = 10 + 1  # category + fake
 np.random.seed(RANDOM_SEED)
 tf.random.set_seed(RANDOM_SEED)
 
@@ -34,23 +34,23 @@ test_z = tf.random.normal([36, Z_DIM])
 def make_discriminaor(input_shape):  # define discriminator
     return tf.keras.Sequential([
         layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
-                      input_shape=[28, 28, 1]),
+                      input_shape=input_shape),
         layers.LeakyReLU(),
         layers.Dropout(0.3),
         layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'),
         layers.LeakyReLU(),
         layers.Dropout(0.3),
         layers.Flatten(),
-        layers.Dense(1)
+        layers.Dense(D_NUM_CLASSES, activation='softmax')
     ])
 
 
 def make_generator(input_shape):  # define generator
     return tf.keras.Sequential([
-        layers.Dense(7*7*256, use_bias=False, input_shape=input_shape),
+        layers.Dense(8*8*256, use_bias=False, input_shape=input_shape),
         layers.BatchNormalization(),
         layers.LeakyReLU(),
-        layers.Reshape((7, 7, 256)),
+        layers.Reshape((8, 8, 256)),
         layers.Conv2DTranspose(128, (5, 5), strides=(
             1, 1), padding='same', use_bias=False),
         layers.BatchNormalization(),
@@ -65,15 +65,21 @@ def make_generator(input_shape):  # define generator
 
 
 def get_loss_fn():  # define loss function
-    criterion = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+    criterion = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
 
-    def d_loss_fn(real_logits, fake_logits):
-        real_loss = criterion(tf.ones_like(real_logits), real_logits)
-        fake_loss = criterion(tf.zeros_like(fake_logits), fake_logits)
+    def d_loss_fn(real_logits, real_labels, fake_logits):
+        fake_labels = tf.one_hot(
+            tf.fill(real_labels.shape, 10), D_NUM_CLASSES)  # 10 is fake category
+        real_labels = tf.one_hot(real_labels, D_NUM_CLASSES)
+
+        real_loss = criterion(real_labels, real_logits)
+        fake_loss = criterion(fake_labels, fake_logits)
         return real_loss + fake_loss
 
     def g_loss_fn(fake_logits):
-        return criterion(tf.ones_like(fake_logits), fake_logits)
+        fake_labels = tf.one_hot(tf.random.uniform(
+            (BATCH_SIZE,), 0, 10, dtype=tf.int32), D_NUM_CLASSES)  # 0 ~ 9 is real category
+        return criterion(fake_labels, fake_logits)
 
     return d_loss_fn, g_loss_fn
 
@@ -81,11 +87,11 @@ sys.path.append('..')
 from utils import generate_and_save_images, get_random_z
 
 # data load & preprocessing
-(train_x, _), (_, _) = tf.keras.datasets.mnist.load_data()
-train_x = train_x.reshape(train_x.shape[0], 28, 28, 1).astype('float32')
+(train_x, train_y), (_, _) = tf.keras.datasets.cifar10.load_data()
+train_x = train_x.reshape(train_x.shape[0], 32, 32, 3).astype('float32')
 train_x = (train_x - 127.5) / 127.5
 train_ds = (
-    tf.data.Dataset.from_tensor_slices(train_x)
+    tf.data.Dataset.from_tensor_slices((train_x, train_y))
     .shuffle(BUFFER_SIZE)
     .batch(BATCH_SIZE, drop_remainder=True)
     .repeat()
@@ -104,7 +110,7 @@ d_loss_fn, g_loss_fn = get_loss_fn()
 
 
 @tf.function
-def train_step(real_images):
+def train_step(real_images, labels):
     z = get_random_z(Z_DIM, BATCH_SIZE)
     with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
         fake_images = G(z, training=True)
@@ -112,7 +118,7 @@ def train_step(real_images):
         fake_logits = D(fake_images, training=True)
         real_logits = D(real_images, training=True)
 
-        d_loss = d_loss_fn(real_logits, fake_logits)
+        d_loss = d_loss_fn(real_logits, labels, fake_logits)
         g_loss = g_loss_fn(fake_logits)
 
     d_gradients = d_tape.gradient(d_loss, D.trainable_variables)
@@ -127,8 +133,8 @@ def train_step(real_images):
 def train(ds, log_freq=20, test_freq=1000):  # training loop
     ds = iter(ds)
     for step in range(ITERATION):
-        images = next(ds)
-        g_loss, d_loss = train_step(images)
+        images, labels = next(ds)
+        g_loss, d_loss = train_step(images, labels)
 
         g_loss_metrics(g_loss)
         d_loss_metrics(d_loss)
@@ -153,7 +159,7 @@ def train(ds, log_freq=20, test_freq=1000):  # training loop
         if step % test_freq == 0:
             # generate result images
             generate_and_save_images(
-                G, step, test_z, IMAGE_SHAPE, name='dcgan_mnist', max_step=ITERATION)
+                G, step, test_z, IMAGE_SHAPE, name='ssgan_cifar10', max_step=ITERATION)
 
 
 train(train_ds)

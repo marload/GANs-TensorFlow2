@@ -7,7 +7,7 @@ import numpy as np
 from datetime import datetime
 
 # tensorboard setting
-log_dir = 'logs/dcgan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir = 'logs/gan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
 writer = tf.summary.create_file_writer(log_dir)
 
 # metrics setting
@@ -20,9 +20,10 @@ ITERATION = 100000
 Z_DIM = 100
 BATCH_SIZE = 512
 BUFFER_SIZE = 60000
-D_LR = 0.0004
-G_LR = 0.0004
-IMAGE_SHAPE = (28, 28, 1)
+IMAGE_SIZE = 32*32*3
+D_LR = 0.0002
+G_LR = 0.0002
+IMAGE_SHAPE = (32, 32, 3)
 RANDOM_SEED = 42
 
 np.random.seed(RANDOM_SEED)
@@ -33,47 +34,28 @@ test_z = tf.random.normal([36, Z_DIM])
 
 def make_discriminaor(input_shape):  # define discriminator
     return tf.keras.Sequential([
-        layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
-                      input_shape=[28, 28, 1]),
-        layers.LeakyReLU(),
-        layers.Dropout(0.3),
-        layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'),
-        layers.LeakyReLU(),
-        layers.Dropout(0.3),
-        layers.Flatten(),
-        layers.Dense(1)
+        layers.Dense(256,  activation=None, input_shape=input_shape),
+        layers.LeakyReLU(0.2),
+        layers.Dense(256,  activation=None),
+        layers.LeakyReLU(0.2),
+        layers.Dense(1, activation='sigmoid')
     ])
 
 
 def make_generator(input_shape):  # define generator
     return tf.keras.Sequential([
-        layers.Dense(7*7*256, use_bias=False, input_shape=input_shape),
-        layers.BatchNormalization(),
-        layers.LeakyReLU(),
-        layers.Reshape((7, 7, 256)),
-        layers.Conv2DTranspose(128, (5, 5), strides=(
-            1, 1), padding='same', use_bias=False),
-        layers.BatchNormalization(),
-        layers.LeakyReLU(),
-        layers.Conv2DTranspose(64, (5, 5), strides=(
-            2, 2), padding='same', use_bias=False),
-        layers.BatchNormalization(),
-        layers.LeakyReLU(),
-        layers.Conv2DTranspose(1, (5, 5), strides=(
-            2, 2), padding='same', use_bias=False, activation='tanh')
+        layers.Dense(256, activation='relu', input_shape=input_shape),
+        layers.Dense(256, activation='relu'),
+        layers.Dense(32*32*3, activation='tanh')
     ])
 
 
 def get_loss_fn():  # define loss function
-    criterion = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-
     def d_loss_fn(real_logits, fake_logits):
-        real_loss = criterion(tf.ones_like(real_logits), real_logits)
-        fake_loss = criterion(tf.zeros_like(fake_logits), fake_logits)
-        return real_loss + fake_loss
+        return -tf.reduce_mean(tf.math.log(real_logits) + tf.math.log(1. - fake_logits))
 
     def g_loss_fn(fake_logits):
-        return criterion(tf.ones_like(fake_logits), fake_logits)
+        return -tf.reduce_mean(tf.math.log(fake_logits))
 
     return d_loss_fn, g_loss_fn
 
@@ -81,8 +63,8 @@ sys.path.append('..')
 from utils import generate_and_save_images, get_random_z
 
 # data load & preprocessing
-(train_x, _), (_, _) = tf.keras.datasets.mnist.load_data()
-train_x = train_x.reshape(train_x.shape[0], 28, 28, 1).astype('float32')
+(train_x, _), (_, _) = tf.keras.datasets.cifar10.load_data()
+train_x = train_x.reshape(train_x.shape[0], 32*32*3).astype('float32')
 train_x = (train_x - 127.5) / 127.5
 train_ds = (
     tf.data.Dataset.from_tensor_slices(train_x)
@@ -93,11 +75,11 @@ train_ds = (
 
 # generator & discriminator
 G = make_generator((Z_DIM,))
-D = make_discriminaor(IMAGE_SHAPE)
+D = make_discriminaor((IMAGE_SIZE,))
 
 # optimizer
-g_optim = tf.keras.optimizers.Adam(G_LR, beta_1=0.5, beta_2=0.999)
-d_optim = tf.keras.optimizers.Adam(D_LR, beta_1=0.5, beta_2=0.999)
+g_optim = tf.keras.optimizers.Adam(G_LR)
+d_optim = tf.keras.optimizers.Adam(D_LR)
 
 # loss function
 d_loss_fn, g_loss_fn = get_loss_fn()
@@ -153,7 +135,7 @@ def train(ds, log_freq=20, test_freq=1000):  # training loop
         if step % test_freq == 0:
             # generate result images
             generate_and_save_images(
-                G, step, test_z, IMAGE_SHAPE, name='dcgan_mnist', max_step=ITERATION)
+                G, step, test_z, IMAGE_SHAPE, name='gan_cifar10', max_step=ITERATION)
 
 
 train(train_ds)

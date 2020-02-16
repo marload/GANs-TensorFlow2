@@ -7,7 +7,7 @@ import numpy as np
 from datetime import datetime
 
 # tensorboard setting
-log_dir = 'logs/gan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir = 'logs/lsgan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
 writer = tf.summary.create_file_writer(log_dir)
 
 # metrics setting
@@ -34,7 +34,7 @@ test_z = tf.random.normal([36, Z_DIM])
 def make_discriminaor(input_shape):  # define discriminator
     return tf.keras.Sequential([
         layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
-                      input_shape=[28, 28, 1]),
+                      input_shape=input_shape),
         layers.LeakyReLU(),
         layers.Dropout(0.3),
         layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'),
