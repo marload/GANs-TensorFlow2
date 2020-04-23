@@ -1,3 +1,4 @@
+from utils import generate_and_save_images, get_random_z
 import tensorflow as tf
 from tensorflow.keras import layers
 
@@ -6,9 +7,8 @@ import numpy as np
 from datetime import datetime
 import sys
 
-# tensorboard setting
-log_dir = 'logs/wgan/' + datetime.now().strftime("%Y%m%d-%H%M%S")
-writer = tf.summary.create_file_writer(log_dir)
+import wandb
+wandb.init(project='tf2-gans', name='WGAN')
 
 # metrics setting
 g_loss_metrics = tf.metrics.Mean(name='g_loss')
@@ -74,8 +74,8 @@ def get_loss_fn():  # define loss function
 
     return d_loss_fn, g_loss_fn
 
+
 sys.path.append('..')
-from utils import generate_and_save_images, get_random_z
 
 # data load & preprocessing
 (train_x, _), (_, _) = tf.keras.datasets.mnist.load_data()
@@ -135,14 +135,11 @@ def train(ds, log_freq=20, test_freq=1000):  # training loop
             template = '[{}/{}] D_loss={:.5f} G_loss={:.5f} Total_loss={:.5f}'
             print(template.format(step, ITERATION, d_loss_metrics.result(),
                                   g_loss_metrics.result(), total_loss_metrics.result()))
-
-            # write the log on the tensorboard
-            with writer.as_default():
-                tf.summary.scalar('g_loss', g_loss_metrics.result(), step=step)
-                tf.summary.scalar('d_loss', d_loss_metrics.result(), step=step)
-                tf.summary.scalar(
-                    'total_loss', total_loss_metrics.result(), step=step)
-
+            wandb.log({
+                'G_Loss': g_loss_metrics.result(),
+                'D_Loss': d_loss_metrics.result(),
+                'Total_Loss': total_loss_metrics.result()
+            })
             g_loss_metrics.reset_states()
             d_loss_metrics.reset_states()
             total_loss_metrics.reset_states()
