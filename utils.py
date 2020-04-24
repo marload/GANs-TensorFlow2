@@ -2,6 +2,9 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from datetime import datetime
 import os
+import numpy as np
+
+video = np.array([])
 
 
 def generate_and_save_images(generator, step, z_input, image_shape, name, max_step=100000, figsize=(6, 6)):
