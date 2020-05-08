@@ -27,7 +27,7 @@
 **Author** Ian J. Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, Yoshua Bengio<br>
 **Publish** NIPS 2014
 
-#### Results
+#### Animation Results
 <p align="center">
   <img width="350" src="./assets/gan.gif">
 </p>
@@ -59,7 +59,7 @@ $ python GAN/GAN.py
 **Author** Alec Radford, Luke Metz, Soumith Chintala<br>
 **Publish** ICLR 2016
 
-#### Results
+#### Animation Results
 <p align="center">
   <img width="350" src="./assets/dcgan.gif">
 </p>
@@ -96,7 +96,7 @@ $ python DCGAN/DCGAN.py
 **Author** Xudong Mao, Qing Li, Haoran Xie, Raymond Y.K. Lau, Zhen Wang, Stephen Paul Smolley<br>
 **Publish** ICCV 2017
 
-#### Results
+#### Animation Results
 <p align="center">
   <img width="350" src="./assets/lsgan.gif">
 </p>
@@ -132,7 +132,7 @@ $ python LSGAN/LSGAN.py
 **Author** Martin Arjovsky, Soumith Chintala, Léon Bottou<br>
 **Publish** arXiv 2017
 
-#### Results
+#### Animation Results
 <p align="center">
   <img width="350" src="./assets/wgan.gif">
 </p>
@@ -164,7 +164,7 @@ $ python WGAN/WGAN.py
 **Author** Ishaan Gulrajani, Faruk Ahmed, Martin Arjovsky, Vincent Dumoulin, Aaron Courville<br>
 **Publish** NIPS 2017
 
-#### Results
+#### Animation Results
 <p align="center">
   <img width="350" src="./assets/wgan-gp.gif">
 </p>
@@ -209,7 +209,7 @@ $ python WGAN-GP/WGAN-GP.py
 **Author** Naveen Kodali, Jacob Abernethy, James Hays, Zsolt Kira<br>
 **Publish** ICLR 2018
 
-#### Results
+#### Animation Results
 <p align="center">
   <img width="350" src="./assets/dragan.gif">
 </p>
