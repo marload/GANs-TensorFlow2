@@ -4,6 +4,7 @@ from tensorflow.keras import layers
 import os
 import numpy as np
 from functools import partial
+import matplotlib.pyplot as plt
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -69,7 +70,7 @@ def make_generator(input_shape):
 
 
 # Wasserstein Loss
-def get_loss_fn():
+def get_loss_fn():  # define loss function
     def d_loss_fn(real_logits, fake_logits):
         return tf.reduce_mean(fake_logits) - tf.reduce_mean(real_logits)
 
@@ -80,18 +81,27 @@ def get_loss_fn():
 
 
 # Gradient Penalty (GP)
-def gradient_penalty(generator, real_images, fake_images):
+def gradient_penalty(generator, real_images):
     real_images = tf.cast(real_images, tf.float32)
-    fake_images = tf.cast(fake_images, tf.float32)
-    alpha = tf.random.uniform([BATCH_SIZE, 1, 1, 1], 0., 1.)
-    diff = fake_images - real_images
-    inter = real_images + (alpha * diff)
+    def _interpolate(a):
+        beta = tf.random.uniform(tf.shape(a), 0., 1.)
+        b = a + 0.5 * tf.math.reduce_std(a) * beta
+        shape = [tf.shape(a)[0]] + [1] * (a.shape.ndims - 1)
+        alpha = tf.random.uniform(shape, 0., 1.)
+        inter = a + alpha * (b - a)
+        inter.set_shape(a.shape)
+        return inter
+    
+    x = _interpolate(real_images)
     with tf.GradientTape() as tape:
-        tape.watch(inter)
-        predictions = generator(inter)
-    gradients = tape.gradient(predictions, [inter])[0]
-    slopes = tf.sqrt(tf.reduce_sum(tf.square(gradients), axis=[1, 2, 3]))
+        tape.watch(x)
+        predictions = generator(x, training=True)
+    grad = tape.gradient(predictions, x)
+    slopes = tf.norm(tf.reshape(grad, [tf.shape(grad)[0], -1]), axis=1)
     return tf.reduce_mean((slopes - 1.) ** 2)
+
+
+
 
 
 # data load & preprocessing
@@ -116,8 +126,26 @@ d_optim = tf.keras.optimizers.Adam(D_LR, beta_1=0.5, beta_2=0.999)
 # loss function
 d_loss_fn, g_loss_fn = get_loss_fn()
 
+i = 0
 
-@tf.function
+
+def test_result(step):
+    global i
+    step = i
+    out = G(test_z)
+
+    figsize = (6, 6)
+    fig = plt.figure(figsize=figsize)
+    for idx in range(out.shape[0]):
+        plt.subplot(figsize[0], figsize[1], idx+1)
+        plt.imshow(out[idx, :, :, 0] * 127.5 + 127.5, cmap='gray')
+        plt.axis('off')
+    plt.savefig(os.path.join(
+        './result', str(step).zfill(len(str(ITERATION))) + '.png'), bbox_inches='tight')
+    i += 1
+
+
+# @tf.function
 def train_step(real_images):
     z = get_random_z(Z_DIM, BATCH_SIZE)
     with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
@@ -129,8 +157,7 @@ def train_step(real_images):
         d_loss = d_loss_fn(real_logits, fake_logits)
         g_loss = g_loss_fn(fake_logits)
 
-        gp = gradient_penalty(partial(D, training=True),
-                              real_images, fake_images)
+        gp = gradient_penalty(partial(D, training=True), real_images)
         d_loss += gp * GP_WEIGHT
 
     d_gradients = d_tape.gradient(d_loss, D.trainable_variables)
@@ -143,7 +170,7 @@ def train_step(real_images):
 
 
 # training loop
-def train(ds, log_freq=20):  
+def train(ds, log_freq=20, test_freq=1000):  
     ds = iter(ds)
     for step in range(ITERATION):
         images = next(ds)
@@ -152,6 +179,8 @@ def train(ds, log_freq=20):
         g_loss_metrics(g_loss)
         d_loss_metrics(d_loss)
         total_loss_metrics(g_loss + d_loss)
+        if step % 3 == 0:
+            test_result(step)
         if step % log_freq == 0:
             template = '[{}/{}] D_loss={:.5f} G_loss={:.5f} Total_loss={:.5f}'
             print(template.format(step, ITERATION, d_loss_metrics.result(),
