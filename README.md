@@ -33,6 +33,7 @@
 </p>
 
 #### Loss Function
+
 ```python
 def get_loss_fn():
     def d_loss_fn(real_logits, fake_logits):
@@ -45,6 +46,7 @@ def get_loss_fn():
 ```
 
 #### Getting Start
+
 ```bash
 $ python GAN/GAN.py
 ```
