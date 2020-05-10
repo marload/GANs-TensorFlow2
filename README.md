@@ -28,6 +28,7 @@
 **Publish** NIPS 2014
 
 #### Animation Results
+
 <p align="center">
   <img width="350" src="./assets/gan.gif">
 </p>
